@@ -26,7 +26,7 @@ io.on("connection", (socket) => {
     socket.join(user.room);
 
     // Welcome current user
-    socket.emit("notice", `Welcome to chat room ${user.room}!`);
+    socket.emit("notice", `Welcome test to chat room ${user.room}!`);
 
     // Broadcast when a user connects
     socket.broadcast

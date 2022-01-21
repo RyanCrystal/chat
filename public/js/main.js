@@ -8,10 +8,10 @@ const { username, room } = Qs.parse(location.search, {
   ignoreQueryPrefix: true,
 });
 
-// const socket = io("https://chat.ryansky.org");
 const socket = io();
 // Join chatroom
 socket.emit("joinRoom", { username, room });
+console.log(socket);
 
 // Get room and users
 socket.on("roomUsers", ({ room, users }) => {
@@ -28,11 +28,15 @@ socket.on("message", (message) => {
   chatMessages.scrollTop = chatMessages.scrollHeight;
 });
 
+socket.on("notice", (msg) => {
+  console.log(msg);
+  outputNotice(msg);
+});
+
 // Message submit
 chatForm.addEventListener("submit", (e) => {
   e.preventDefault();
 
-  // Get message text
   let msg = e.target.elements.msg.value;
 
   msg = msg.trim();
@@ -52,16 +56,54 @@ chatForm.addEventListener("submit", (e) => {
 // Output message to DOM
 function outputMessage(message) {
   const div = document.createElement("div");
+  const className = message.socketId === socket.id ? "self" : "other";
+
   div.classList.add("message");
+  div.classList.add(className);
+  const avatarContainerDiv = document.createElement("div");
+  const avatarDiv = document.createElement("div");
+  avatarContainerDiv.classList.add("avatar-container");
+  avatarDiv.classList.add("avatar");
+  avatarContainerDiv.appendChild(avatarDiv);
+  avatarDiv.innerText = message.username[0];
+  div.appendChild(avatarContainerDiv);
+
+  const messageContainerDiv = document.createElement("div");
+  messageContainerDiv.classList.add("message-container");
   const p = document.createElement("p");
   p.classList.add("meta");
   p.innerText = message.username;
-  p.innerHTML += `<span>${message.time}</span>`;
-  div.appendChild(p);
-  const para = document.createElement("p");
+  // p.innerHTML += `<span>${message.time}</span>`;
+  messageContainerDiv.appendChild(p);
+
+  const para = document.createElement("span");
   para.classList.add("text");
   para.innerText = message.text;
-  div.appendChild(para);
+
+  const invisibleDiv = document.createElement("div");
+  invisibleDiv.classList.add("invisible");
+
+  messageContainerDiv.appendChild(para);
+  messageContainerDiv.appendChild(invisibleDiv);
+
+  const timeDiv = document.createElement("div");
+  timeDiv.classList.add("time-container");
+  timeDiv.innerHTML = `<small class="time">${message.time}</small>`;
+
+  messageContainerDiv.appendChild(timeDiv);
+
+  div.appendChild(messageContainerDiv);
+
+  document.querySelector(".chat-messages").appendChild(div);
+}
+
+function outputNotice(message) {
+  const div = document.createElement("div");
+  div.classList.add("notice-container");
+  const p = document.createElement("small");
+  p.classList.add("notice");
+  p.innerText = message;
+  div.appendChild(p);
   document.querySelector(".chat-messages").appendChild(div);
 }
 
@@ -88,3 +130,14 @@ document.getElementById("leave-btn").addEventListener("click", () => {
   } else {
   }
 });
+document.getElementById("msg").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && e.target.value.trim() !== "") {
+    console.log(e);
+    socket.emit("chatMessage", e.target.value.trim());
+
+    // Clear input
+    e.target.value = "";
+    e.target.focus();
+  }
+});
+document.getElementById("msg").focus();

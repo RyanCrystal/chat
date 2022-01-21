@@ -1,10 +1,11 @@
-const moment = require('moment');
+const moment = require("moment");
 
-function formatMessage(username, text) {
+function formatMessage(socketId, username, text) {
   return {
+    socketId,
     username,
     text,
-    time: moment().format('h:mm a')
+    time: moment().format("h:mm a"),
   };
 }
 

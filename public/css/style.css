@@ -206,7 +206,7 @@ a {
   display: flex;
 }
 .chat-messages-container{
-	border-right: 1px solid #ccc2c2;
+	border-left: 1px solid #ccc2c2;
 }
 
 .chat-form-container input[type="text"] {
